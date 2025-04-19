@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Form Simpan ke GitHub</title>
+</head>
+<body>
+  <h2>Formulir Simpan ke GitHub</h2>
+  <form id="dataForm">
+    <label>Nama:</label><br>
+    <input type="text" id="nama" required><br><br>
+
+    <label>Email:</label><br>
+    <input type="email" id="email" required><br><br>
+
+    <label>Nomor HP:</label><br>
+    <input type="tel" id="hp" required><br><br>
+
+    <label>Pesan:</label><br>
+    <textarea id="pesan" required></textarea><br><br>
+
+    <button type="submit">Kirim</button>
+  </form>
+
+  <script>
+    const token = "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";
+    const username = "Gibran904";
+    const repo = "form";
+    const path = "data.json";
+
+    document.getElementById("dataForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      const nama = document.getElementById("nama").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const hp = document.getElementById("hp").value.trim();
+      const pesan = document.getElementById("pesan").value.trim();
+
+      if (!nama || !email || !hp || !pesan) {
+        alert("Semua field wajib diisi!");
+        return;
+      }
+
+      const newData = {
+        nama,
+        email,
+        hp,
+        pesan,
+        waktu: new Date().toISOString()
+      };
+
+      const headers = {
+        "Authorization": `token ${token}`,
+        "Accept": "application/vnd.github.v3+json`
+      };
+
+      try {
+        const res = await fetch(`https://api.github.com/repos/${username}/${repo}/contents/${path}`, { headers });
+        const file = await res.json();
+        const content = atob(file.content);
+        const jsonData = JSON.parse(content);
+        jsonData.push(newData);
+
+        await fetch(`https://api.github.com/repos/${username}/${repo}/contents/${path}`, {
+          method: "PUT",
+          headers,
+          body: JSON.stringify({
+            message: "Tambah data dari form",
+            content: btoa(JSON.stringify(jsonData, null, 2)),
+            sha: file.sha
+          })
+        });
+
+        alert("Data berhasil dikirim ke GitHub!");
+      } catch (err) {
+        console.error(err);
+        alert("Gagal menyimpan data. Coba lagi!");
+      }
+    });
+  </script>
+</body>
+</html>
