@@ -1,80 +1,79 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Form Simpan ke GitHub</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Form Kirim ke Google Sheets</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 400px;
+      margin: 50px auto;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    input {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #45a049;
+    }
+  </style>
 </head>
 <body>
-  <h2>Formulir Simpan ke GitHub</h2>
-  <form id="dataForm">
-    <label>Nama:</label><br>
-    <input type="text" id="nama" required><br><br>
-
-    <label>Email:</label><br>
-    <input type="email" id="email" required><br><br>
-
-    <label>Nomor WA:</label><br>
-    <input type="tel" id="hp" required><br><br>
-
-    <label>Pesan:</label><br>
-    <textarea id="pesan" required></textarea><br><br>
-
+  <h2>Form Data</h2>
+  <form id="form">
+    <input type="text" id="username" name="username" placeholder="Username" required />
+    <input type="email" id="email" name="email" placeholder="Email" required />
+    <input type="tel" id="phone" name="phone" placeholder="Nomor Telepon" required />
     <button type="submit">Kirim</button>
   </form>
 
   <script>
-    const token = "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";
-    const username = "Gibran904";
-    const repo = "form";
-    const path = "data.json";
-
-    document.getElementById("dataForm").addEventListener("submit", async function(e) {
+    const form = document.getElementById("form");
+    form.addEventListener("submit", (e) => {
       e.preventDefault();
 
-      const nama = document.getElementById("nama").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const hp = document.getElementById("hp").value.trim();
-      const pesan = document.getElementById("pesan").value.trim();
-
-      if (!nama || !email || !hp || !pesan) {
-        alert("Semua field wajib diisi!");
-        return;
-      }
-
-      const newData = {
-        nama,
-        email,
-        hp,
-        pesan,
-        waktu: new Date().toISOString()
+      const data = {
+        username: document.getElementById("username").value,
+        email: document.getElementById("email").value,
+        phone: document.getElementById("phone").value
       };
 
-      const headers = {
-        "Authorization": `token ${token}`,
-        "Accept": "application/vnd.github.v3+json`
-      };
-
-      try {
-        const res = await fetch(`https://api.github.com/repos/${username}/${repo}/contents/${path}`, { headers });
-        const file = await res.json();
-        const content = atob(file.content);
-        const jsonData = JSON.parse(content);
-        jsonData.push(newData);
-
-        await fetch(`https://api.github.com/repos/${username}/${repo}/contents/${path}`, {
-          method: "PUT",
-          headers,
-          body: JSON.stringify({
-            message: "Tambah data dari form",
-            content: btoa(JSON.stringify(jsonData, null, 2)),
-            sha: file.sha
-          })
+      fetch("https://script.google.com/macros/s/AKfycbxs2zWNM8KBzQuYnu7M7Pjvmie8j85mrM6mh0FQh4ClqOD8DQNOQX7wc48K2pCnH53eKg/exec", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+      })
+        .then((res) => res.json())
+        .then((res) => {
+          alert("Data berhasil dikirim! 🚀");
+          form.reset();
+        })
+        .catch((err) => {
+          console.error("Gagal kirim:", err);
+          alert("Gagal kirim data 😢");
         });
-
-        alert("Data berhasil dikirim ke GitHub!");
-      } catch (err) {
-        console.error(err);
-        alert("Gagal menyimpan data. Coba lagi!");
-      }
     });
   </script>
 </body>
